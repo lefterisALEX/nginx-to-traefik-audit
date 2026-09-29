@@ -41,15 +41,6 @@ Audit a directory and also merge all per-cluster reports into one CSV:
 ./check-nginx-annotations.sh --merge kubeconfigs
 ```
 
-Equivalent manual loop, if you prefer:
-
-```bash
-for f in kubeconfigs/*.yaml; do
-    echo "=== $f ==="
-    ./check-nginx-annotations.sh "$f" || echo "FAILED: $f"
-done
-```
-
 When given a directory the script processes each kubeconfig in turn and
 continues past failures, exiting non-zero at the end if any cluster failed.
 
