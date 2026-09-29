@@ -1,0 +1,903 @@
+# Test fixture: 40 Ingresses covering every annotation category.
+#   app-01..10  namespace test-a  (mix of unsupported / remark / supported / unknown)
+#   app-11..20  namespace test-b
+#   app-21..30  namespace test-c
+#   app-31..40  namespace test-d
+#
+# Apply with:  kubectl --kubeconfig dev-cluster.yaml apply -f test-ingresses.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-01
+  namespace: test-a
+  annotations:
+    nginx.ingress.kubernetes.io/limit-rate: "10m"
+    nginx.ingress.kubernetes.io/ssl-ciphers: "HIGH:!aNULL"
+    nginx.ingress.kubernetes.io/modsecurity-snippet: "SecRuleEngine On"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-01.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-01
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-02
+  namespace: test-a
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: "/"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-02.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-02
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-03
+  namespace: test-a
+  annotations:
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-name: "srv"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-03.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-03
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-04
+  namespace: test-a
+  annotations:
+    nginx.ingress.kubernetes.io/auth-cache-key: "$scheme$host"
+    nginx.ingress.kubernetes.io/auth-url: "https://auth.example.com"
+    nginx.ingress.kubernetes.io/configuration-snippet: "add_header X-Test 1;"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-04.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-04
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-05
+  namespace: test-a
+  annotations:
+    nginx.ingress.kubernetes.io/enable-http2: "true"
+    nginx.ingress.kubernetes.io/enable-ipv6: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-05.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-05
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-06
+  namespace: test-a
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-06.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-06
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-07
+  namespace: test-a
+  annotations:
+    nginx.ingress.kubernetes.io/canary: "true"
+    nginx.ingress.kubernetes.io/canary-weight: "20"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-07.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-07
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-08
+  namespace: test-a
+  annotations:
+    nginx.ingress.kubernetes.io/auth-keepalive: "10"
+    nginx.ingress.kubernetes.io/auth-keepalive-timeout: "60"
+    nginx.ingress.kubernetes.io/global-rate-limit: "100"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-08.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-08
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-09
+  namespace: test-a
+  annotations:
+    nginx.ingress.kubernetes.io/permanent-redirect: "https://new.example.com"
+    nginx.ingress.kubernetes.io/permanent-redirect-code: "308"
+    nginx.ingress.kubernetes.io/app-root: "/app"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-09.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-09
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-10
+  namespace: test-a
+  annotations:
+    nginx.ingress.kubernetes.io/mirror-target: "https://mirror.example.com"
+    nginx.ingress.kubernetes.io/mirror-request-body: "off"
+    cert-manager.io/cluster-issuer: "letsencrypt"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-10.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-10
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-11
+  namespace: test-b
+  annotations:
+    nginx.ingress.kubernetes.io/limit-rate-after: "1000"
+    nginx.ingress.kubernetes.io/limit-whitelist: "10.0.0.0/8"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-11.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-11
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-12
+  namespace: test-b
+  annotations:
+    nginx.ingress.kubernetes.io/auth-signin: "https://auth.example.com/login"
+    nginx.ingress.kubernetes.io/auth-method: "GET"
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: basic-auth
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-12.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-12
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-13
+  namespace: test-b
+  annotations:
+    nginx.ingress.kubernetes.io/session-cookie-max-age: "3600"
+    nginx.ingress.kubernetes.io/session-cookie-samesite: "Lax"
+    nginx.ingress.kubernetes.io/affinity-mode: "balanced"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-13.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-13
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-14
+  namespace: test-b
+  annotations:
+    nginx.ingress.kubernetes.io/upstream-vhost: "$host"
+    nginx.ingress.kubernetes.io/upstream-hash-by: "$request_uri"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-14.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-14
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-15
+  namespace: test-b
+  annotations:
+    nginx.ingress.kubernetes.io/enable-opentelemetry: "true"
+    nginx.ingress.kubernetes.io/opentelemetry-trust-incoming-span: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-15.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-15
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-16
+  namespace: test-b
+  annotations:
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://*.example.com"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, OPTIONS"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-16.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-16
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-17
+  namespace: test-b
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-redirect-from: "http://old.example.com"
+    nginx.ingress.kubernetes.io/proxy-redirect-to: "https://new.example.com"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-17.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-17
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-18
+  namespace: test-b
+  annotations:
+    nginx.ingress.kubernetes.io/from-to-www-redirect: "true"
+    nginx.ingress.kubernetes.io/server-alias: "alias.example.com"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-18.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-18
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-19
+  namespace: test-b
+  annotations:
+    nginx.ingress.kubernetes.io/denylist-source-range: "192.168.0.0/16"
+    nginx.ingress.kubernetes.io/satisfy: "any"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-19.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-19
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-20
+  namespace: test-b
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+    nginx.ingress.kubernetes.io/proxy-ssl-secret: "default/tls-secret"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-20.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-20
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-21
+  namespace: test-c
+  annotations:
+    nginx.ingress.kubernetes.io/global-rate-limit-window: "60s"
+    nginx.ingress.kubernetes.io/global-rate-limit-key: "$binary_remote_addr"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-21.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-21
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-22
+  namespace: test-c
+  annotations:
+    nginx.ingress.kubernetes.io/enable-modsecurity: "true"
+    nginx.ingress.kubernetes.io/enable-owasp-core-rules: "true"
+    nginx.ingress.kubernetes.io/modsecurity-transaction-id: "$request_id"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-22.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-22
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-23
+  namespace: test-c
+  annotations:
+    nginx.ingress.kubernetes.io/disable-proxy-intercept-errors: "true"
+    nginx.ingress.kubernetes.io/connection-proxy-header: "keep-alive"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-23.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-23
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-24
+  namespace: test-c
+  annotations:
+    nginx.ingress.kubernetes.io/auth-tls-secret: "default/ca-secret"
+    nginx.ingress.kubernetes.io/auth-tls-verify-client: "on"
+    nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-24.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-24
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-25
+  namespace: test-c
+  annotations:
+    nginx.ingress.kubernetes.io/service-upstream: "true"
+    nginx.ingress.kubernetes.io/load-balance: "round_robin"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-25.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-25
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-26
+  namespace: test-c
+  annotations:
+    nginx.ingress.kubernetes.io/custom-http-errors: "404,500"
+    nginx.ingress.kubernetes.io/default-backend: "error-svc"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-26.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-26
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-27
+  namespace: test-c
+  annotations:
+    nginx.ingress.kubernetes.io/server-snippet: "add_header X-Server 1;"
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-27.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-27
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-28
+  namespace: test-c
+  annotations:
+    nginx.ingress.kubernetes.io/enable-rewrite-log: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: "/api"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-28.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-28
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-29
+  namespace: test-c
+  annotations:
+    nginx.ingress.kubernetes.io/session-cookie-change-on-failure: "true"
+    nginx.ingress.kubernetes.io/session-cookie-conditional-samesite-none: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-29.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-29
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-30
+  namespace: test-c
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/cors-max-age: "600"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-30.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-30
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-31
+  namespace: test-d
+  annotations:
+    nginx.ingress.kubernetes.io/opentracing-trust-incoming-span: "true"
+    nginx.ingress.kubernetes.io/enable-opentracing: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-31.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-31
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-32
+  namespace: test-d
+  annotations:
+    nginx.ingress.kubernetes.io/auth-proxy-set-headers: "default/proxy-headers"
+    nginx.ingress.kubernetes.io/auth-response-headers: "X-Auth-User"
+    nginx.ingress.kubernetes.io/auth-realm: "Authentication Required"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-32.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-32
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-33
+  namespace: test-d
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-cookie-domain: "example.com"
+    nginx.ingress.kubernetes.io/proxy-cookie-path: "/"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-33.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-33
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-34
+  namespace: test-d
+  annotations:
+    nginx.ingress.kubernetes.io/auth-cache-duration: "200 202 401 5m"
+    nginx.ingress.kubernetes.io/auth-cache-key: "$host$request_uri"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-34.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-34
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-35
+  namespace: test-d
+  annotations:
+    nginx.ingress.kubernetes.io/mirror-host: "mirror.example.com"
+    nginx.ingress.kubernetes.io/mirror-target: "https://mirror.example.com"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-35.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-35
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-36
+  namespace: test-d
+  annotations:
+    nginx.ingress.kubernetes.io/stream-snippet: "listen 9000;"
+    nginx.ingress.kubernetes.io/proxy-ssl-protocols: "TLSv1.2"
+    nginx.ingress.kubernetes.io/proxy-ssl-verify-depth: "2"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-36.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-36
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-37
+  namespace: test-d
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "AUTO_HTTP"
+    nginx.ingress.kubernetes.io/upstream-vhost: "$service_name"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-37.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-37
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-38
+  namespace: test-d
+  annotations:
+    nginx.ingress.kubernetes.io/temporal-redirect: "https://temp.example.com"
+    nginx.ingress.kubernetes.io/temporal-redirect-code: "307"
+    nginx.ingress.kubernetes.io/cors-expose-headers: "X-Total-Count"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-38.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-38
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-39
+  namespace: test-d
+  annotations:
+    nginx.ingress.kubernetes.io/canary-by-header: "X-Canary"
+    nginx.ingress.kubernetes.io/canary-by-header-value: "always"
+    nginx.ingress.kubernetes.io/canary-weight-total: "100"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-39.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-39
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-40
+  namespace: test-d
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "5m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/rewrite-target: "/"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app-40.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-40
+                port:
+                  number: 80

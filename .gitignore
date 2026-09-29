@@ -1,0 +1,10 @@
+# kubeconfigs and any cluster YAML
+*.yaml
+*.yml
+
+# directories we never publish
+kubeconfigs/
+reports/
+
+# keep the test fixture despite the *.yaml rule above
+!test-ingresses.yaml

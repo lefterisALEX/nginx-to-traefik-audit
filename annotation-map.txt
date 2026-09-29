@@ -1,0 +1,152 @@
+# nginx -> traefik annotation mapping
+#
+# Format:  status | annotation | note(optional)
+#   status = unsupported | remark | supported
+#   note   = free text remark shown in the report (optional)
+#
+# 'remark' == supported but with limitations. Per request the limitation text
+# is intentionally NOT stored here; reference the migration guide instead.
+# Lines starting with '#' and blank lines are ignored.
+
+# ---------------------------------------------------------------------------
+# UNSUPPORTED
+# ---------------------------------------------------------------------------
+unsupported|nginx.ingress.kubernetes.io/auth-tls-error-page|
+unsupported|nginx.ingress.kubernetes.io/auth-tls-match-cn|
+unsupported|nginx.ingress.kubernetes.io/auth-cache-key|
+unsupported|nginx.ingress.kubernetes.io/auth-cache-duration|
+unsupported|nginx.ingress.kubernetes.io/auth-keepalive|
+unsupported|nginx.ingress.kubernetes.io/auth-keepalive-share-vars|
+unsupported|nginx.ingress.kubernetes.io/auth-keepalive-requests|
+unsupported|nginx.ingress.kubernetes.io/auth-keepalive-timeout|
+unsupported|nginx.ingress.kubernetes.io/auth-proxy-set-headers|
+unsupported|nginx.ingress.kubernetes.io/disable-proxy-intercept-errors|
+unsupported|nginx.ingress.kubernetes.io/limit-rate-after|
+unsupported|nginx.ingress.kubernetes.io/limit-rate|
+unsupported|nginx.ingress.kubernetes.io/limit-whitelist|
+unsupported|nginx.ingress.kubernetes.io/global-rate-limit|
+unsupported|nginx.ingress.kubernetes.io/global-rate-limit-window|
+unsupported|nginx.ingress.kubernetes.io/global-rate-limit-key|
+unsupported|nginx.ingress.kubernetes.io/global-rate-limit-ignored-cidrs|
+unsupported|nginx.ingress.kubernetes.io/preserve-trailing-slash|Traefik preserves trailing slash by default.
+unsupported|nginx.ingress.kubernetes.io/proxy-cookie-domain|
+unsupported|nginx.ingress.kubernetes.io/proxy-cookie-path|
+unsupported|nginx.ingress.kubernetes.io/proxy-redirect-from|
+unsupported|nginx.ingress.kubernetes.io/proxy-redirect-to|
+unsupported|nginx.ingress.kubernetes.io/proxy-ssl-ciphers|
+unsupported|nginx.ingress.kubernetes.io/proxy-ssl-verify-depth|
+unsupported|nginx.ingress.kubernetes.io/proxy-ssl-protocols|
+unsupported|nginx.ingress.kubernetes.io/enable-rewrite-log|
+unsupported|nginx.ingress.kubernetes.io/satisfy|
+unsupported|nginx.ingress.kubernetes.io/session-cookie-conditional-samesite-none|
+unsupported|nginx.ingress.kubernetes.io/session-cookie-change-on-failure|
+unsupported|nginx.ingress.kubernetes.io/ssl-ciphers|
+unsupported|nginx.ingress.kubernetes.io/ssl-prefer-server-ciphers|
+unsupported|nginx.ingress.kubernetes.io/connection-proxy-header|
+unsupported|nginx.ingress.kubernetes.io/enable-opentracing|
+unsupported|nginx.ingress.kubernetes.io/opentracing-trust-incoming-span|
+unsupported|nginx.ingress.kubernetes.io/enable-opentelemetry|
+unsupported|nginx.ingress.kubernetes.io/opentelemetry-trust-incoming-span|
+unsupported|nginx.ingress.kubernetes.io/enable-modsecurity|
+unsupported|nginx.ingress.kubernetes.io/enable-owasp-core-rules|
+unsupported|nginx.ingress.kubernetes.io/modsecurity-transaction-id|
+unsupported|nginx.ingress.kubernetes.io/modsecurity-snippet|
+unsupported|nginx.ingress.kubernetes.io/mirror-request-body|
+unsupported|nginx.ingress.kubernetes.io/mirror-target|
+unsupported|nginx.ingress.kubernetes.io/mirror-host|
+unsupported|nginx.ingress.kubernetes.io/denylist-source-range|
+unsupported|nginx.ingress.kubernetes.io/stream-snippet|
+
+# ---------------------------------------------------------------------------
+# REMARK  (supported, but with limitations / caveats)
+# ---------------------------------------------------------------------------
+remark|nginx.ingress.kubernetes.io/auth-url|
+remark|nginx.ingress.kubernetes.io/auth-signin|
+remark|nginx.ingress.kubernetes.io/auth-snippet|
+remark|nginx.ingress.kubernetes.io/auth-method|
+remark|nginx.ingress.kubernetes.io/ssl-redirect|
+remark|nginx.ingress.kubernetes.io/force-ssl-redirect|
+remark|nginx.ingress.kubernetes.io/ssl-passthrough|
+remark|nginx.ingress.kubernetes.io/auth-tls-secret|
+remark|nginx.ingress.kubernetes.io/auth-tls-verify-client|
+remark|nginx.ingress.kubernetes.io/auth-tls-verify-depth|
+remark|nginx.ingress.kubernetes.io/affinity-mode|
+remark|nginx.ingress.kubernetes.io/affinity-canary-behavior|
+remark|nginx.ingress.kubernetes.io/load-balance|
+remark|nginx.ingress.kubernetes.io/backend-protocol|
+remark|nginx.ingress.kubernetes.io/upstream-hash-by|
+remark|nginx.ingress.kubernetes.io/upstream-vhost|
+remark|nginx.ingress.kubernetes.io/custom-headers|
+remark|nginx.ingress.kubernetes.io/default-backend|
+remark|nginx.ingress.kubernetes.io/proxy-http-version|
+remark|nginx.ingress.kubernetes.io/enable-cors|
+remark|nginx.ingress.kubernetes.io/cors-allow-origin|
+remark|nginx.ingress.kubernetes.io/from-to-www-redirect|
+remark|nginx.ingress.kubernetes.io/rewrite-target|
+remark|nginx.ingress.kubernetes.io/permanent-redirect|
+remark|nginx.ingress.kubernetes.io/permanent-redirect-code|
+remark|nginx.ingress.kubernetes.io/temporal-redirect|
+remark|nginx.ingress.kubernetes.io/temporal-redirect-code|
+remark|nginx.ingress.kubernetes.io/custom-http-errors|
+remark|nginx.ingress.kubernetes.io/server-alias|
+remark|nginx.ingress.kubernetes.io/server-snippet|
+remark|nginx.ingress.kubernetes.io/configuration-snippet|
+remark|nginx.ingress.kubernetes.io/limit-rps|
+remark|nginx.ingress.kubernetes.io/limit-rpm|
+remark|nginx.ingress.kubernetes.io/limit-burst-multiplier|
+remark|nginx.ingress.kubernetes.io/limit-connections|
+remark|nginx.ingress.kubernetes.io/proxy-buffers-number|
+remark|nginx.ingress.kubernetes.io/enable-access-log|
+remark|nginx.ingress.kubernetes.io/proxy-connect-timeout|
+remark|nginx.ingress.kubernetes.io/proxy-send-timeout|
+remark|nginx.ingress.kubernetes.io/proxy-read-timeout|
+remark|nginx.ingress.kubernetes.io/proxy-next-upstream|
+remark|nginx.ingress.kubernetes.io/proxy-next-upstream-tries|
+remark|nginx.ingress.kubernetes.io/proxy-next-upstream-timeout|
+
+# ---------------------------------------------------------------------------
+# SUPPORTED
+# ---------------------------------------------------------------------------
+supported|nginx.ingress.kubernetes.io/auth-type|
+supported|nginx.ingress.kubernetes.io/auth-secret|
+supported|nginx.ingress.kubernetes.io/auth-secret-type|
+supported|nginx.ingress.kubernetes.io/auth-realm|
+supported|nginx.ingress.kubernetes.io/auth-response-headers|
+supported|nginx.ingress.kubernetes.io/enable-global-auth|
+supported|nginx.ingress.kubernetes.io/proxy-ssl-server-name|
+supported|nginx.ingress.kubernetes.io/proxy-ssl-name|
+supported|nginx.ingress.kubernetes.io/proxy-ssl-verify|
+supported|nginx.ingress.kubernetes.io/proxy-ssl-secret|
+supported|nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream|
+supported|nginx.ingress.kubernetes.io/affinity|
+supported|nginx.ingress.kubernetes.io/session-cookie-name|
+supported|nginx.ingress.kubernetes.io/session-cookie-secure|
+supported|nginx.ingress.kubernetes.io/session-cookie-path|
+supported|nginx.ingress.kubernetes.io/session-cookie-domain|
+supported|nginx.ingress.kubernetes.io/session-cookie-samesite|
+supported|nginx.ingress.kubernetes.io/session-cookie-max-age|
+supported|nginx.ingress.kubernetes.io/session-cookie-expires|
+supported|nginx.ingress.kubernetes.io/service-upstream|
+supported|nginx.ingress.kubernetes.io/canary|
+supported|nginx.ingress.kubernetes.io/canary-by-header|
+supported|nginx.ingress.kubernetes.io/canary-by-header-value|
+supported|nginx.ingress.kubernetes.io/canary-by-header-pattern|
+supported|nginx.ingress.kubernetes.io/canary-by-cookie|
+supported|nginx.ingress.kubernetes.io/canary-weight|
+supported|nginx.ingress.kubernetes.io/canary-weight-total|
+supported|nginx.ingress.kubernetes.io/x-forwarded-prefix|
+supported|nginx.ingress.kubernetes.io/cors-allow-credentials|
+supported|nginx.ingress.kubernetes.io/cors-allow-headers|
+supported|nginx.ingress.kubernetes.io/cors-allow-methods|
+supported|nginx.ingress.kubernetes.io/cors-expose-headers|
+supported|nginx.ingress.kubernetes.io/cors-max-age|
+supported|nginx.ingress.kubernetes.io/app-root|
+supported|nginx.ingress.kubernetes.io/use-regex|
+supported|nginx.ingress.kubernetes.io/whitelist-source-range|
+supported|nginx.ingress.kubernetes.io/allowlist-source-range|
+supported|nginx.ingress.kubernetes.io/proxy-request-buffering|
+supported|nginx.ingress.kubernetes.io/proxy-body-size|
+supported|nginx.ingress.kubernetes.io/client-body-buffer-size|
+supported|nginx.ingress.kubernetes.io/proxy-buffering|
+supported|nginx.ingress.kubernetes.io/proxy-buffer-size|
+supported|nginx.ingress.kubernetes.io/proxy-max-temp-file-size|
