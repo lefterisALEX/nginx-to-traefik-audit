@@ -1,5 +1,9 @@
 # nginx -> traefik annotation audit
 
+> A simple, agent-generated shell script to audit the Ingresses of one or more
+> clusters and flag the `nginx.ingress.kubernetes.io/*` annotations that need
+> attention when moving from ingress-nginx to Traefik.
+
 Scans every Ingress in one or more clusters and reports which
 `nginx.ingress.kubernetes.io/*` annotations are **unsupported**, which are
 **supported with remarks/limitations**, and which are **unknown** (not in the
