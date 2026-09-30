@@ -9,6 +9,7 @@
 #   ./check-nginx-annotations.sh <kubeconfig.yaml>     # single cluster
 #   ./check-nginx-annotations.sh <kubeconfigs-dir>     # every *.yaml/*.yml in the dir
 #   ./check-nginx-annotations.sh --merge <dir>         # also merge all reports into one CSV
+#   ./check-nginx-annotations.sh --values <dir>        # include the annotation value column
 #
 # Examples:
 #   ./check-nginx-annotations.sh kubeconfigs/dev-cluster.yaml
@@ -17,6 +18,8 @@
 #     -> loops over kubeconfigs/*.yaml and writes one report per cluster
 #   ./check-nginx-annotations.sh --merge kubeconfigs
 #     -> as above, plus reports/all-clusters-annotations-report.csv
+#   ./check-nginx-annotations.sh --values kubeconfigs
+#     -> appends the annotation value as a "value" CSV column
 #
 # The mapping file can be overridden with the MAP_FILE environment variable,
 # the output directory with REPORTS_DIR, the merged filename with MERGED_OUT.
@@ -31,7 +34,7 @@ REPORTS_DIR="${REPORTS_DIR:-reports}"
 
 usage() {
     cat <<EOF
-Usage: $(basename "$0") [--merge] <kubeconfig.yaml | kubeconfigs-dir>
+Usage: $(basename "$0") [--merge] [--values] <kubeconfig.yaml | kubeconfigs-dir>
 
 Scans all Ingress objects in the cluster described by <kubeconfig.yaml> and
 reports which nginx.ingress.kubernetes.io/* annotations are unsupported or
@@ -39,11 +42,16 @@ carry remarks (see $MAP_FILE).
 
 If a directory is given, every *.yaml / *.yml kubeconfig inside it is processed
 in turn (one report per cluster). Pass --merge to also write a single CSV that
-concatenates every per-cluster report.
+concatenates every per-cluster report. Pass --values to append the annotation
+value as an extra "value" column.
 
 Outputs (under ./reports, override with REPORTS_DIR):
   reports/<name>-annotations-report.csv
   reports/all-clusters-annotations-report.csv   (with --merge)
+
+Flags:
+  --merge   also concatenate all reports into one CSV
+  --values  add a "value" column with each annotation's value
 
 Environment:
   MAP_FILE    mapping file (default: $SCRIPT_DIR/annotation-map.txt)
@@ -61,6 +69,17 @@ trim() {
     printf '%s' "$s"
 }
 
+# Quote a CSV field if it contains a comma, quote, or newline.
+csv_field() {
+    local s="$1"
+    if [[ "$s" == *","* || "$s" == *'"'* || "$s" == *$'\n'* ]]; then
+        s="${s//\"/\"\"}"
+        printf '"%s"' "$s"
+    else
+        printf '%s' "$s"
+    fi
+}
+
 # Number of elements in an (associative) array, safe under `set -u`
 # even when the array has never had an element assigned.
 arr_count() {
@@ -74,11 +93,13 @@ arr_count() {
 
 # --- argument handling -------------------------------------------------------
 MERGE=0
+VALUES=0
 positional=()
 for arg in "$@"; do
     case "$arg" in
         -h|--help) usage; exit 0 ;;
         --merge)   MERGE=1 ;;
+        --values)  VALUES=1 ;;
         -*)        die "unknown option: $arg" ;;
         *)         positional+=("$arg") ;;
     esac
@@ -96,6 +117,9 @@ command -v kubectl >/dev/null 2>&1 || die "kubectl not found in PATH"
 mkdir -p "$REPORTS_DIR"
 
 MERGED_OUT="${MERGED_OUT:-$REPORTS_DIR/all-clusters-annotations-report.csv}"
+
+CSV_HEADER="context,namespace,ingress,annotation,status,note"
+[[ "$VALUES" -eq 1 ]] && CSV_HEADER+=",value"
 
 # --- load mapping (once, shared by every cluster) ----------------------------
 declare -A STATUS NOTE
@@ -160,12 +184,14 @@ process_kubeconfig() {
                 *)           status="unknown"; unknown_ing["$key"]=1 ;;
             esac
 
-            csv_rows+="$base,$ns,$name,$ann,$status,$note"$'\n'
+            local row="$base,$ns,$name,$ann,$status,$(csv_field "$note")"
+            [[ "$VALUES" -eq 1 ]] && row+=",$(csv_field "$value")"
+            csv_rows+="$row"$'\n'
         done < "$tmp_hits"
     fi
 
     {
-        echo "context,namespace,ingress,annotation,status,note"
+        echo "$CSV_HEADER"
         printf '%s' "$csv_rows"
     } > "$csv_out"
     produced_csvs+=("$csv_out")
@@ -208,7 +234,7 @@ if [[ "$MERGE" -eq 1 ]]; then
         printf 'WARNING: --merge requested but no reports were produced\n' >&2
     else
         {
-            echo "context,namespace,ingress,annotation,status,note"
+            echo "$CSV_HEADER"
             for c in "${produced_csvs[@]}"; do
                 tail -n +2 "$c"
             done
