@@ -69,6 +69,16 @@ REPORTS_DIR=out ./check-nginx-annotations.sh kubeconfigs/dev-cluster.yaml
 
 The `status` column is `unsupported`, `remark`, `supported`, or `unknown`.
 
+With `--values`, an extra `value` column holds each annotation's value:
+
+```bash
+./check-nginx-annotations.sh --values kubeconfigs
+```
+
+`context,namespace,ingress,annotation,status,note,value`
+
+Fields containing commas, quotes, or newlines are quoted per RFC 4180.
+
 ### Merged report
 
 With `--merge`, every per-cluster CSV is concatenated (header written once)
