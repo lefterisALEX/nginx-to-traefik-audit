@@ -8,3 +8,5 @@ reports/
 
 # keep the test fixture despite the *.yaml rule above
 !test-ingresses.yaml
+!tests/**/*.yaml
+!tests/**/*.yml

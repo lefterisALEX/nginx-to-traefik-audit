@@ -1,0 +1,58 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: connect-timeout
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blackhole
+  namespace: connect-timeout
+  labels:
+    app: blackhole
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: blackhole
+  template:
+    metadata:
+      labels:
+        app: blackhole
+    spec:
+      containers:
+        - name: blackhole
+          image: alpine:3.20
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN"]
+          command:
+            - sh
+            - -c
+            - |
+              apk add --no-cache iptables >/dev/null 2>&1
+              iptables -A INPUT -p tcp --dport 80 -j DROP
+              echo "blackhole ready: SYN to tcp/80 is dropped, connect attempts hang"
+              sleep infinity
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "iptables -C INPUT -p tcp --dport 80 -j DROP"]
+            initialDelaySeconds: 3
+            periodSeconds: 2
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: blackhole
+  namespace: connect-timeout
+  labels:
+    app: blackhole
+spec:
+  selector:
+    app: blackhole
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80

@@ -1,0 +1,77 @@
+# Fast backend for body-size / buffer-size tests.
+#   POST /         -> 200 "ok" (reads and discards the request body)
+#   GET  /bighdr   -> 200 with a 16 KiB response header (tests header buffering)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello
+  namespace: connect-timeout
+  labels:
+    app: hello
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello
+  template:
+    metadata:
+      labels:
+        app: hello
+    spec:
+      containers:
+        - name: hello
+          image: python:3.12-alpine
+          command:
+            - python
+            - -u
+            - -c
+            - |
+              from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+              class H(BaseHTTPRequestHandler):
+                  def _respond(self):
+                      self.send_response(200)
+                      if self.path.startswith("/bighdr"):
+                          self.send_header("X-Big", "a" * 16384)
+                      self.send_header("Content-Length", "2")
+                      self.end_headers()
+                      self.wfile.write(b"ok")
+
+                  def do_GET(self):
+                      self._respond()
+
+                  def do_POST(self):
+                      remaining = int(self.headers.get("Content-Length", "0"))
+                      while remaining > 0:
+                          chunk = self.rfile.read(min(65536, remaining))
+                          if not chunk:
+                              break
+                          remaining -= len(chunk)
+                      self._respond()
+
+                  def log_message(self, *args):
+                      pass
+
+              ThreadingHTTPServer(("0.0.0.0", 80), H).serve_forever()
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            tcpSocket:
+              port: 80
+            initialDelaySeconds: 2
+            periodSeconds: 2
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello
+  namespace: connect-timeout
+  labels:
+    app: hello
+spec:
+  selector:
+    app: hello
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80

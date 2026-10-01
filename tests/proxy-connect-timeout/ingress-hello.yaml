@@ -1,0 +1,41 @@
+# Ingress pair for body-size / buffer-size tests (class "nginx" so both
+# ingress-nginx and Traefik's Kubernetes Ingress NGINX provider pick them up).
+#   path /        -> body-size test (POST)
+#   path /bighdr  -> buffer-size test (GET, 16 KiB response header)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hello-nginx
+  namespace: connect-timeout
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: hello-nginx.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: hello
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hello-traefik
+  namespace: connect-timeout
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: hello-traefik.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: hello
+                port:
+                  number: 80

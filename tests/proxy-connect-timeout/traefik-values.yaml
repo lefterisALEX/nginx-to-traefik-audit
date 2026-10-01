@@ -1,0 +1,49 @@
+# Traefik values: Kubernetes Ingress NGINX provider only, configured so that
+# behaviour matches ingress-nginx (as validated on the homelabs cluster).
+#
+# Only TWO behaviour-changing settings are needed:
+#   1. proxyConnectTimeout: 5      (Traefik default is 60; nginx is 5)
+#   2. proxyRequestBuffering: true (else Traefik ignores proxyBodySize)
+# Everything else already matches ingress-nginx's defaults and is listed only
+# for documentation; you can omit it safely.
+#
+# Usage:
+#   helm upgrade --install traefik traefik/traefik -n traefik --create-namespace \
+#     -f tests/proxy-connect-timeout/traefik-values.yaml
+#
+# ingress-nginx is NOT changed (frozen during migration).
+
+providers:
+  # Provider-only mode: the nginx-annotation provider reads the Ingresses.
+  kubernetesCRD:
+    enabled: false
+  kubernetesIngress:
+    enabled: false
+  kubernetesIngressNGINX:
+    enabled: true
+    # Select IngressClasses with controller k8s.io/ingress-nginx (the "nginx" class).
+    ingressClass: nginx
+
+    # --- REQUIRED (differs from Traefik default) ----------------------------
+    # Connect: ingress-nginx default is 5s, Traefik's is 60s -> MUST override.
+    proxyConnectTimeout: 5
+    # REQUIRED: without request buffering Traefik ignores proxyBodySize and
+    # accepts oversized uploads. Matches nginx's proxy_request_buffering: on.
+    proxyRequestBuffering: true
+
+    # --- OPTIONAL: already equal to Traefik's defaults (documentation only) --
+    # Read/Send both default to 60s (same as nginx).
+    proxyReadTimeout: 60
+    proxySendTimeout: 60
+    # Retries: Traefik defaults are "error timeout" / 3 / 0, same as nginx.
+    # NOTE: Traefik retries connect-phase failures only, not read/send timeouts.
+    proxyNextUpstream: "error timeout"
+    proxyNextUpstreamTries: 3
+    proxyNextUpstreamTimeout: 0
+    # Request body limit 1m, same as nginx client_max_body_size.
+    proxyBodySize: 1048576
+
+# Service type is environment-specific; set what your cluster needs
+# (LoadBalancer / NodePort / ClusterIP).
+# service:
+#   type: NodePort

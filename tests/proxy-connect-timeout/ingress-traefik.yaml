@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: blackhole-traefik
+  namespace: connect-timeout
+  annotations:
+    # Traefik runs with the Kubernetes Ingress NGINX provider
+    # (providers.kubernetesIngressNGINX), which selects IngressClasses whose
+    # controller is k8s.io/ingress-nginx -- i.e. the normal "nginx" class.
+    # It translates this nginx annotation directly, so the connect timeout is
+    # honoured just like ingress-nginx does (per-attempt default 60s).
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "__CONNECT_TIMEOUT__"
+    nginx.ingress.kubernetes.io/proxy-next-upstream: "off"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: traefik-connect.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: blackhole
+                port:
+                  number: 80

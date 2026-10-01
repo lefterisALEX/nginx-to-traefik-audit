@@ -1,0 +1,60 @@
+# Send-timeout backend: accepts TCP connections but never reads from them.
+# With a tiny SO_RCVBUF the peer's window fills fast, so the proxy blocks while
+# sending the request body -> isolates proxy-send-timeout.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blackhole-send
+  namespace: connect-timeout
+  labels:
+    app: blackhole-send
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: blackhole-send
+  template:
+    metadata:
+      labels:
+        app: blackhole-send
+    spec:
+      containers:
+        - name: blackhole-send
+          image: python:3.12-alpine
+          command:
+            - python
+            - -u
+            - -c
+            - |
+              import socket
+              s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+              s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+              s.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 4096)
+              s.bind(("0.0.0.0", 80))
+              s.listen(64)
+              conns = []
+              while True:
+                  c, _ = s.accept()
+                  conns.append(c)
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            tcpSocket:
+              port: 80
+            initialDelaySeconds: 2
+            periodSeconds: 2
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: blackhole-send
+  namespace: connect-timeout
+  labels:
+    app: blackhole-send
+spec:
+  selector:
+    app: blackhole-send
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80

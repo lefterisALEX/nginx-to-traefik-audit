@@ -1,0 +1,65 @@
+# Read-timeout backend: accepts the TCP connection, reads the request, then
+# stalls before sending any response. This isolates proxy-read-timeout (the
+# connect succeeds, the wait is during the read phase).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blackhole-read
+  namespace: connect-timeout
+  labels:
+    app: blackhole-read
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: blackhole-read
+  template:
+    metadata:
+      labels:
+        app: blackhole-read
+    spec:
+      containers:
+        - name: blackhole-read
+          image: python:3.12-alpine
+          command:
+            - python
+            - -u
+            - -c
+            - |
+              import time
+              from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+              class H(BaseHTTPRequestHandler):
+                  def do_GET(self):
+                      time.sleep(600)
+                      self.send_response(200)
+                      self.send_header("Content-Length", "2")
+                      self.end_headers()
+                      self.wfile.write(b"ok")
+
+                  def log_message(self, *args):
+                      pass
+
+              ThreadingHTTPServer(("0.0.0.0", 80), H).serve_forever()
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            tcpSocket:
+              port: 80
+            initialDelaySeconds: 2
+            periodSeconds: 2
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: blackhole-read
+  namespace: connect-timeout
+  labels:
+    app: blackhole-read
+spec:
+  selector:
+    app: blackhole-read
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80

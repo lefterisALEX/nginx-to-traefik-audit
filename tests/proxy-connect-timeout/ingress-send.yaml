@@ -1,0 +1,39 @@
+# Two Ingresses for the send-timeout test (class "nginx", so both ingress-nginx
+# and Traefik's Kubernetes Ingress NGINX provider pick them up).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: send-nginx
+  namespace: connect-timeout
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: send-nginx.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: blackhole-send
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: send-traefik
+  namespace: connect-timeout
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: send-traefik.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: blackhole-send
+                port:
+                  number: 80

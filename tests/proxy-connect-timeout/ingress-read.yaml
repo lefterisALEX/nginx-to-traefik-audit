@@ -1,0 +1,39 @@
+# Two Ingresses for the read-timeout test (class "nginx", so both ingress-nginx
+# and Traefik's Kubernetes Ingress NGINX provider pick them up).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: read-nginx
+  namespace: connect-timeout
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: read-nginx.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: blackhole-read
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: read-traefik
+  namespace: connect-timeout
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: read-traefik.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: blackhole-read
+                port:
+                  number: 80

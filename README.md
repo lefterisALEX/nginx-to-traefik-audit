@@ -121,3 +121,83 @@ kubectl --kubeconfig kubeconfigs/dev-cluster.yaml apply -f test-ingresses.yaml
 ./check-nginx-annotations.sh kubeconfigs/dev-cluster.yaml
 kubectl --kubeconfig kubeconfigs/dev-cluster.yaml delete -f test-ingresses.yaml
 ```
+
+### Behaviour tests
+
+`tests/proxy-connect-timeout/` verifies how ingress-nginx and Traefik actually
+handle the `nginx.ingress.kubernetes.io/proxy-connect-timeout` annotation. It
+deploys a "blackhole" backend whose TCP SYNs are dropped and measures how long
+each controller waits before returning 504:
+
+```bash
+tests/proxy-connect-timeout/run.sh kubeconfigs/dev-cluster.yaml --install
+```
+
+Traefik is installed with **only** the Kubernetes Ingress NGINX provider
+(`providers.kubernetesIngressNGINX`, controller class `k8s.io/ingress-nginx`),
+so it reads the same nginx annotations. Expected outcome: both controllers
+honour the annotation and return after the configured timeout.
+
+The defaults differ when no annotation is present: ingress-nginx uses **5s**
+per attempt, Traefik's ingress-nginx provider uses **60s** per attempt. Both
+retry 3 times by default (`proxy-next-upstream-tries: 3`), so the fixture sets
+`proxy-next-upstream: "off"` to measure a single attempt.
+
+#### Manual testing with curl
+
+Deploy the playground (blackhole backend + one ingress-nginx and one Traefik
+Ingress, both class `nginx`):
+
+```bash
+kubectl --kubeconfig kubeconfigs/dev-cluster.yaml apply -f tests/proxy-connect-timeout/manual.yaml
+kubectl -n connect-timeout wait --for=condition=Ready pod -l app=blackhole --timeout=120s
+```
+
+Forward both controllers to local ports (two terminals):
+
+```bash
+kubectl --kubeconfig kubeconfigs/dev-cluster.yaml -n ingress-nginx port-forward svc/ingress-nginx-controller 8080:80
+kubectl --kubeconfig kubeconfigs/dev-cluster.yaml -n traefik port-forward svc/traefik 8081:80
+```
+
+Then probe each (the request hangs until the connect timeout fires):
+
+```bash
+curl -s -o /dev/null -w 'nginx   http=%{http_code} time=%{time_total}s\n' \
+  -H 'Host: nginx-connect.example.com'   http://127.0.0.1:8080/
+curl -s -o /dev/null -w 'traefik http=%{http_code} time=%{time_total}s\n' \
+  -H 'Host: traefik-connect.example.com' http://127.0.0.1:8081/
+```
+
+Change the timeout and re-apply to see the measured time follow:
+
+```bash
+kubectl -n connect-timeout annotate ingress blackhole-nginx \
+  nginx.ingress.kubernetes.io/proxy-connect-timeout=10 --overwrite
+```
+
+#### Relevant nginx annotations
+
+`proxy-connect-timeout`, `proxy-send-timeout`, `proxy-read-timeout`,
+`proxy-next-upstream`, `proxy-next-upstream-tries`, `proxy-next-upstream-timeout`
+(see `annotation-map.txt` for the full list and status). The Traefik
+ingress-nginx provider maps these too.
+
+#### Changing the defaults
+
+- ingress-nginx, global: set the key on the controller ConfigMap
+  (`kubectl -n ingress-nginx edit configmap ingress-nginx-controller`, e.g.
+  `proxy-connect-timeout: "10"`), or `helm upgrade ... --set
+  controller.config.proxy-connect-timeout="10"`. Default is **5s** (v1.15.x,
+  `ProxyConnectTimeout: 5`).
+- ingress-nginx, per Ingress: the `proxy-connect-timeout` annotation.
+- Traefik ingress-nginx provider, global:
+  `--providers.kubernetesingressnginx.proxyconnecttimeout` (default **60s**),
+  plus the matching `proxyreadtimeout` / `proxysendtimeout` /
+  `proxynextupstream` / `proxynextupstreamtries` / `proxynextupstreamtimeout`.
+  Helm: `--set providers.kubernetesIngressNGINX.proxyConnectTimeout=10`.
+- Traefik ingress-nginx provider, per Ingress: the same
+  `nginx.ingress.kubernetes.io/proxy-connect-timeout` annotation.
+
+
+
